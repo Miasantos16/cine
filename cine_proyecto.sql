@@ -1,337 +1,197 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
+-- =====================================================================
+--  BASE DE DATOS: CINE (cine_proyecto) - versión corregida
+--  Para importar en XAMPP (MySQL / MariaDB) desde phpMyAdmin:
+--    1) Crea una base llamada cine_proyecto y ábrela.
+--    2) Pestaña "Importar" -> elige este archivo -> "Importar".
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 05-11-2026 a las 17:25:13
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.0.30
+--  Cambios respecto a la versión anterior:
+--    - horarios: id_horario ahora es número (antes era tipo hora y
+--      los dos horarios tenían el mismo id) y tiene llave primaria.
+--    - peliculas: "reparto" ahora acepta texto (antes era varchar(0)),
+--      King Kong tiene id 1, fecha, duración y clasificación reales.
+--    - generos: un género por fila (antes todos estaban en una sola).
+--    - Se quitaron datos repetidos (+13, ingles, salas 1 y 2).
+--    - Se agregaron llaves foráneas entre las tablas.
+-- =====================================================================
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
 SET time_zone = "+00:00";
+SET NAMES utf8mb4;
 
+-- Borra las tablas si ya existían, para poder volver a importar
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS funciones, pelicula_genero, peliculas, usuarios, salas,
+  horarios, idiomas, generos, formatos, estados, clasificaciones;
+SET FOREIGN_KEY_CHECKS = 1;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+-- ---------------------------------------------------------------------
+-- CATÁLOGOS
+-- ---------------------------------------------------------------------
 
---
--- Base de datos: `cine_proyecto`
---
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `clasificaciones`
---
-
-CREATE TABLE `clasificaciones` (
-  `id_clasificacion` int(11) NOT NULL,
-  `Nombre` varchar(50) NOT NULL,
-  `descripcion` varchar(255) NOT NULL
+CREATE TABLE clasificaciones (
+  id_clasificacion INT(11) NOT NULL AUTO_INCREMENT,
+  nombre           VARCHAR(50)  NOT NULL UNIQUE,
+  descripcion      VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id_clasificacion)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `clasificaciones`
---
+INSERT INTO clasificaciones (id_clasificacion, nombre, descripcion) VALUES
+  (1, 'Todo público', 'Apta para todo público'),
+  (2, '+13',          'Mayores de 13 años'),
+  (3, '+16',          'Mayores de 16 años'),
+  (4, '+18',          'Solo adultos');
 
-INSERT INTO `clasificaciones` (`id_clasificacion`, `Nombre`, `descripcion`) VALUES
-(1, 'todo publico', 'apto para todo publico'),
-(6, '+13', '\r\nMayores de 13 años'),
-(7, '+13', '\r\nMayores de 13 años'),
-(8, '+16', 'mayores de +16 años'),
-(9, '+18', 'solo adultos');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `estados`
---
-
-CREATE TABLE `estados` (
-  `id_estado` int(11) NOT NULL,
-  `nombre_estado` varchar(50) NOT NULL
+CREATE TABLE estados (
+  id_estado     INT(11) NOT NULL AUTO_INCREMENT,
+  nombre_estado VARCHAR(50) NOT NULL UNIQUE,
+  PRIMARY KEY (id_estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `estados`
---
+INSERT INTO estados (id_estado, nombre_estado) VALUES
+  (1, 'En cartelera'),
+  (2, 'Próximamente'),
+  (3, 'Avanzada');
 
-INSERT INTO `estados` (`id_estado`, `nombre_estado`) VALUES
-(1, 'En cartelera'),
-(2, 'Proximamente'),
-(3, 'Avanzada');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `formatos`
---
-
-CREATE TABLE `formatos` (
-  `id_formato` int(11) NOT NULL,
-  `nombre_formato` varchar(50) NOT NULL
+CREATE TABLE formatos (
+  id_formato     INT(11) NOT NULL AUTO_INCREMENT,
+  nombre_formato VARCHAR(50) NOT NULL UNIQUE,
+  PRIMARY KEY (id_formato)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `formatos`
---
+INSERT INTO formatos (id_formato, nombre_formato) VALUES
+  (1, '2D'),
+  (2, '3D'),
+  (3, 'IMAX');
 
-INSERT INTO `formatos` (`id_formato`, `nombre_formato`) VALUES
-(1, '2D'),
-(2, '3D'),
-(3, 'IMAX');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `funciones`
---
-
-CREATE TABLE `funciones` (
-  `id_funcion` int(11) NOT NULL,
-  `id_pelicula` int(11) NOT NULL,
-  `id_horario` int(11) NOT NULL,
-  `id_sala` int(11) NOT NULL,
-  `fecha` date NOT NULL
+CREATE TABLE generos (
+  id_genero     INT(11) NOT NULL AUTO_INCREMENT,
+  nombre_genero VARCHAR(100) NOT NULL UNIQUE,
+  PRIMARY KEY (id_genero)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+INSERT INTO generos (id_genero, nombre_genero) VALUES
+  (1, 'Acción'),
+  (2, 'Comedia'),
+  (3, 'Drama'),
+  (4, 'Terror'),
+  (5, 'Romance'),
+  (6, 'Aventura'),
+  (7, 'Animación'),
+  (8, 'Ciencia ficción');
 
---
--- Estructura de tabla para la tabla `generos`
---
-
-CREATE TABLE `generos` (
-  `id_genero` int(11) NOT NULL,
-  `nombre_genero` varchar(100) NOT NULL
+CREATE TABLE idiomas (
+  id_idioma     INT(11) NOT NULL AUTO_INCREMENT,
+  nombre_idioma VARCHAR(50) NOT NULL UNIQUE,
+  PRIMARY KEY (id_idioma)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `generos`
---
+INSERT INTO idiomas (id_idioma, nombre_idioma) VALUES
+  (1, 'Inglés'),
+  (2, 'Español'),
+  (3, 'Francés');
 
-INSERT INTO `generos` (`id_genero`, `nombre_genero`) VALUES
-(1, 'Acción\r\nComedia\r\nDrama\r\nTerror\r\nRomance\r\nAventura\r\nAnimación\r\nCiencia ficción');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `horarios`
---
-
-CREATE TABLE `horarios` (
-  `id_horario` time(1) NOT NULL,
-  `hora_inicio` time(6) NOT NULL,
-  `hora_fin` time(6) NOT NULL
+CREATE TABLE horarios (
+  id_horario  INT(11) NOT NULL AUTO_INCREMENT,
+  hora_inicio TIME NOT NULL,
+  hora_fin    TIME NOT NULL,
+  PRIMARY KEY (id_horario),
+  CONSTRAINT chk_horas CHECK (hora_fin > hora_inicio)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `horarios`
---
+INSERT INTO horarios (id_horario, hora_inicio, hora_fin) VALUES
+  (1, '10:00:00', '12:00:00'),
+  (2, '13:00:00', '15:00:00');
 
-INSERT INTO `horarios` (`id_horario`, `hora_inicio`, `hora_fin`) VALUES
-('00:00:00.0', '10:00:00.000000', '12:00:00.000000'),
-('00:00:00.0', '13:00:00.000000', '15:00:00.000000');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `idiomas`
---
-
-CREATE TABLE `idiomas` (
-  `id_idiomas` int(11) NOT NULL,
-  `nombre_idioma` varchar(50) NOT NULL
+CREATE TABLE salas (
+  id_sala     INT(11) NOT NULL AUTO_INCREMENT,
+  nombre_sala VARCHAR(50) NOT NULL UNIQUE,
+  capacidad   INT(11) NOT NULL,
+  tipo_sala   VARCHAR(50) NOT NULL,
+  PRIMARY KEY (id_sala)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `idiomas`
---
+INSERT INTO salas (id_sala, nombre_sala, capacidad, tipo_sala) VALUES
+  (1, 'Sala 1', 100, '2D'),
+  (2, 'Sala 2', 120, '3D');
 
-INSERT INTO `idiomas` (`id_idiomas`, `nombre_idioma`) VALUES
-(1, 'ingles'),
-(2, 'ingles'),
-(3, 'español'),
-(4, 'frances');
+-- ---------------------------------------------------------------------
+-- PELÍCULAS
+-- ---------------------------------------------------------------------
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `peliculas`
---
-
-CREATE TABLE `peliculas` (
-  `id_pelicula` int(11) NOT NULL,
-  `titulo` varchar(150) NOT NULL,
-  `imagen` varchar(255) NOT NULL,
-  `duracion` int(11) NOT NULL,
-  `fecha_estreno` date NOT NULL,
-  `director` varchar(250) NOT NULL,
-  `reparto` varchar(0) NOT NULL,
-  `sinopsis` text NOT NULL,
-  `id_clasificacion` int(11) NOT NULL,
-  `id_idioma` int(11) NOT NULL,
-  `id_formato` int(11) NOT NULL,
-  `id_estado` int(11) NOT NULL
+CREATE TABLE peliculas (
+  id_pelicula      INT(11) NOT NULL AUTO_INCREMENT,
+  titulo           VARCHAR(150) NOT NULL,
+  imagen           VARCHAR(255) NOT NULL,
+  duracion         INT(11) NOT NULL,            -- en minutos
+  fecha_estreno    DATE NOT NULL,
+  director         VARCHAR(250) NOT NULL,
+  reparto          VARCHAR(500) NULL,
+  sinopsis         TEXT NOT NULL,
+  id_clasificacion INT(11) NOT NULL,
+  id_idioma        INT(11) NOT NULL,
+  id_formato       INT(11) NOT NULL,
+  id_estado        INT(11) NOT NULL,
+  PRIMARY KEY (id_pelicula),
+  CONSTRAINT fk_peliculas_clasificacion FOREIGN KEY (id_clasificacion)
+    REFERENCES clasificaciones (id_clasificacion),
+  CONSTRAINT fk_peliculas_idioma  FOREIGN KEY (id_idioma)  REFERENCES idiomas (id_idioma),
+  CONSTRAINT fk_peliculas_formato FOREIGN KEY (id_formato) REFERENCES formatos (id_formato),
+  CONSTRAINT fk_peliculas_estado  FOREIGN KEY (id_estado)  REFERENCES estados (id_estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `peliculas`
---
+INSERT INTO peliculas (id_pelicula, titulo, imagen, duracion, fecha_estreno, director,
+                       reparto, sinopsis, id_clasificacion, id_idioma, id_formato, id_estado) VALUES
+  (1, 'King Kong', 'https://images7.alphacoders.com/412/412904.jpg', 187, '2005-12-14',
+   'Peter Jackson', 'Naomi Watts, Jack Black, Adrien Brody',
+   'Un equipo de cine viaja a la misteriosa Isla Calavera, donde descubre a Kong, un gorila gigantesco que es el rey de la selva. Cuando lo capturan y lo llevan a Nueva York, Kong escapa y siembra el caos en la ciudad, en una historia sobre el choque entre la naturaleza y la civilización.',
+   2, 1, 3, 2);
 
-INSERT INTO `peliculas` (`id_pelicula`, `titulo`, `imagen`, `duracion`, `fecha_estreno`, `director`, `reparto`, `sinopsis`, `id_clasificacion`, `id_idioma`, `id_formato`, `id_estado`) VALUES
-(0, 'KING KING', 'https://images7.alphacoders.com/412/412904.jpg', 1, '0000-00-00', 'PETER JACKSON', '', 'Si te refieres al personaje **King Kong**, aquí tienes una descripción:\r\n\r\n**King Kong** es un gigantesco gorila ficticio, conocido por su enorme fuerza, inteligencia y apariencia imponente. Habita originalmente en una isla remota llamada Skull Island, donde es considerado el rey de la selva y protector de su territorio. A pesar de su aspecto feroz, Kong demuestra emociones como la lealtad, la curiosidad y la compasión, especialmente hacia los seres humanos que ganan su confianza.\r\n\r\nEs uno de los monstruos más famosos del cine, destacando por su tamaño colosal, su habilidad para enfrentarse a criaturas gigantes y su capacidad para escalar edificios y sobrevivir en entornos extremos. Su historia suele explorar el conflicto entre la naturaleza y la civilización, convirtiéndolo en un personaje tan temido como admirado.\r\n', 0, 2, 3, 2);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pelicula_genero`
---
-
-CREATE TABLE `pelicula_genero` (
-  `id_pelicula` int(11) NOT NULL,
-  `id_genero` int(11) NOT NULL
+-- Tabla intermedia: una película puede tener varios géneros
+CREATE TABLE pelicula_genero (
+  id_pelicula INT(11) NOT NULL,
+  id_genero   INT(11) NOT NULL,
+  PRIMARY KEY (id_pelicula, id_genero),
+  CONSTRAINT fk_pg_pelicula FOREIGN KEY (id_pelicula) REFERENCES peliculas (id_pelicula)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_pg_genero   FOREIGN KEY (id_genero)   REFERENCES generos (id_genero)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+INSERT INTO pelicula_genero (id_pelicula, id_genero) VALUES
+  (1, 1),   -- King Kong: Acción
+  (1, 6);   -- King Kong: Aventura
 
---
--- Estructura de tabla para la tabla `salas`
---
+-- ---------------------------------------------------------------------
+-- FUNCIONES (qué película se da, en qué sala, qué día y a qué hora)
+-- ---------------------------------------------------------------------
 
-CREATE TABLE `salas` (
-  `id_sala` int(11) NOT NULL,
-  `nombre_sala` varchar(50) NOT NULL,
-  `capacidad` int(11) NOT NULL,
-  `tipo_sala` varchar(50) NOT NULL
+CREATE TABLE funciones (
+  id_funcion  INT(11) NOT NULL AUTO_INCREMENT,
+  id_pelicula INT(11) NOT NULL,
+  id_horario  INT(11) NOT NULL,
+  id_sala     INT(11) NOT NULL,
+  fecha       DATE NOT NULL,
+  PRIMARY KEY (id_funcion),
+  -- No puede haber dos funciones en la misma sala, día y horario
+  UNIQUE KEY uq_sala_fecha_horario (id_sala, fecha, id_horario),
+  CONSTRAINT fk_funciones_pelicula FOREIGN KEY (id_pelicula) REFERENCES peliculas (id_pelicula),
+  CONSTRAINT fk_funciones_horario  FOREIGN KEY (id_horario)  REFERENCES horarios (id_horario),
+  CONSTRAINT fk_funciones_sala     FOREIGN KEY (id_sala)     REFERENCES salas (id_sala)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `salas`
---
+-- ---------------------------------------------------------------------
+-- USUARIOS (para entrar al panel de administración)
+-- ---------------------------------------------------------------------
 
-INSERT INTO `salas` (`id_sala`, `nombre_sala`, `capacidad`, `tipo_sala`) VALUES
-(1, 'Sala 1', 100, '2d'),
-(2, 'Sala 2 ', 120, '3d'),
-(3, 'SALA 1', 100, '2D'),
-(4, 'SALA 2', 120, '3D');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `usuarios`
---
-
-CREATE TABLE `usuarios` (
-  `id_usuario` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `usuario` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL
+CREATE TABLE usuarios (
+  id_usuario INT(11) NOT NULL AUTO_INCREMENT,
+  nombre     VARCHAR(100) NOT NULL,
+  usuario    VARCHAR(50)  NOT NULL UNIQUE,
+  password   VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `usuarios`
---
-
-INSERT INTO `usuarios` (`id_usuario`, `nombre`, `usuario`, `password`) VALUES
-(1, 'NOMBRE', 'ADMIN', 'ADMIN1234');
-
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `clasificaciones`
---
-ALTER TABLE `clasificaciones`
-  ADD PRIMARY KEY (`id_clasificacion`);
-
---
--- Indices de la tabla `estados`
---
-ALTER TABLE `estados`
-  ADD PRIMARY KEY (`id_estado`);
-
---
--- Indices de la tabla `formatos`
---
-ALTER TABLE `formatos`
-  ADD PRIMARY KEY (`id_formato`);
-
---
--- Indices de la tabla `generos`
---
-ALTER TABLE `generos`
-  ADD PRIMARY KEY (`id_genero`);
-
---
--- Indices de la tabla `idiomas`
---
-ALTER TABLE `idiomas`
-  ADD PRIMARY KEY (`id_idiomas`);
-
---
--- Indices de la tabla `salas`
---
-ALTER TABLE `salas`
-  ADD PRIMARY KEY (`id_sala`);
-
---
--- Indices de la tabla `usuarios`
---
-ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`id_usuario`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `clasificaciones`
---
-ALTER TABLE `clasificaciones`
-  MODIFY `id_clasificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
-
---
--- AUTO_INCREMENT de la tabla `estados`
---
-ALTER TABLE `estados`
-  MODIFY `id_estado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `formatos`
---
-ALTER TABLE `formatos`
-  MODIFY `id_formato` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `generos`
---
-ALTER TABLE `generos`
-  MODIFY `id_genero` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT de la tabla `idiomas`
---
-ALTER TABLE `idiomas`
-  MODIFY `id_idiomas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT de la tabla `salas`
---
-ALTER TABLE `salas`
-  MODIFY `id_sala` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT de la tabla `usuarios`
---
-ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Usuario de práctica. En un sistema real la contraseña se guarda
+-- cifrada (por ejemplo con password_hash() de PHP), no en texto.
+INSERT INTO usuarios (id_usuario, nombre, usuario, password) VALUES
+  (1, 'Administrador', 'ADMIN', 'ADMIN1234');
